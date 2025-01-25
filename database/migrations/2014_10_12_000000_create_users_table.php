@@ -13,6 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
+        /**
+         * Añadí el campo phone_number para autenticación OTP
+         * Agregué validaciones de longitud a los campos name, email, phone_number y password
+         */
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name', 50);

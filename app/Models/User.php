@@ -17,6 +17,7 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
+    // Añadí el campo phone_number para autenticación OTP
     protected $fillable = [
         'name',
         'email',
