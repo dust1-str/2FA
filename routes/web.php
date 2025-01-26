@@ -25,7 +25,10 @@ Route::post('login', [LoginController::class, 'login'])->name('login');
 Route::get('register', [LoginController::class, 'showRegisterForm']);
 Route::post('register', [LoginController::class, 'register'])->name('register');
 
-Route::get('otp/{id}', [LoginController::class, 'showOtpForm'])->whereNumber('id')->name('otp');
+Route::middleware(['logged'])->group(function () {
+    Route::get('otp/{id}', [LoginController::class, 'showOtpForm'])->whereNumber('id')->name('otp');
+});
+
 Route::post('otp/{id}', [LoginController::class, 'verifyOtp'])->whereNumber('id')->name('verifyOtp');
 Route::post('resend-otp', [LoginController::class, 'resendOtp'])->name('resendOtp');
 

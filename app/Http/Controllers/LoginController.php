@@ -45,8 +45,11 @@ class LoginController extends Controller
             return redirect()->intended('home');
         }
 
+        // Establecer el indicador en la sesión
+        $request->session()->put('otp_passed', false);
+
         return back()->withErrors([
-            'failed' => 'The provided OTP is invalid.',
+            'failed' => $otpValidate->message,
         ])->withInput();
 
     }
