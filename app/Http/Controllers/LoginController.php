@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Auth\Events\Registered;
 use App\Models\User;
 
 class LoginController extends Controller
@@ -18,6 +19,15 @@ class LoginController extends Controller
     public function showRegisterForm()
     {
         return view('register');
+    }
+
+    public function showOtpForm()
+    {
+        return view('auth.otp');
+    }
+
+    public function verifiyOtp(){
+
     }
 
     public function login(Request $request)
@@ -33,10 +43,15 @@ class LoginController extends Controller
 
         $credentials = $validator->safe()->only(['email', 'password']);
 
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
+        $user = User::where('email', $credentials['email'])->first();
+        if ($user->email_verified_at === null) {
+            return back()->withErrors([
+                'failed' => 'Your account is not verified. Please check your email inbox.',
+            ])->withInput();
+        }
 
-            return redirect()->intended('home');
+        if ($user['email'] === $credentials['email'] && Hash::check($credentials['password'], $user['password'])) {
+            return redirect()->route('otp');
         }
 
         return back()->withErrors([
@@ -49,7 +64,6 @@ class LoginController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users',
-            'phone_number' => 'required|min:10|max:12|unique:users',
             'password' => 'required|min:8|max:12',
             'confirm_password' => 'required|same:password',
         ]);
@@ -63,10 +77,25 @@ class LoginController extends Controller
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
-            'phone_number' => $data['phone_number'],
             'password' => Hash::make($data['password']),
         ]);
 
-        return redirect()->route('register')->with('success', 'User registered successfully!');
+        if ($user) {
+            Auth::login($user);
+            event(new Registered($user));
+        }
+
+        return redirect()->route('register')->with('success', 'We have sent you an email to verify your account. Please check your inbox.');
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+
+        $request->session()->regenerateToken();
+
+        return redirect('/login');
     }
 }

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,6 +25,27 @@ Route::post('login', [LoginController::class, 'login'])->name('login');
 Route::get('register', [LoginController::class, 'showRegisterForm']);
 Route::post('register', [LoginController::class, 'register'])->name('register');
 
+Route::get('otp', [LoginController::class, 'showOtpForm'])->name('otp');
+Route::post('otp', [LoginController::class, 'verifyOtp'])->name('verifyOtp');
+
+Route::post('logout', [LoginController::class, 'logout'])->name('logout');
+
 Route::get('home', function () {
     return view('home');
-});
+})->middleware(['auth','verified']);
+
+Route::get('/email/verify', function () {
+    return view('auth.verify-email');
+})->name('verification.notice');
+
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
+ 
+    return view('auth.email-verified');
+})->middleware(['auth','signed'])->name('verification.verify');
+
+Route::post('/email/verification-notification', function (Request $request) {
+    $request->user()->sendEmailVerificationNotification();
+ 
+    return back()->with('message', 'Verification link sent!');
+})->middleware(['auth', 'throttle:6,1'])->name('verification.send');

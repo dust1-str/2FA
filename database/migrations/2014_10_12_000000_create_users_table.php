@@ -14,14 +14,12 @@ return new class extends Migration
     public function up()
     {
         /**
-         * Add phone_number for OTP authentication
          * Add length validations to name, email, phone_number and password fields
          */
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name', 50);
             $table->string('email', 255)->unique();
-            $table->string('phone_number', 10)->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
