@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Auth\Events\Registered;
+use Ichtrojan\Otp\Otp;
 use App\Models\User;
 
 class LoginController extends Controller
@@ -21,13 +22,38 @@ class LoginController extends Controller
         return view('register');
     }
 
-    public function showOtpForm()
+    public function showOtpForm($id)
     {
-        return view('auth.otp');
+        return view('auth.otp', compact('id'));
     }
 
-    public function verifiyOtp(){
+    public function verifyOtp(Request $request, $id){
+        $validator = Validator::make($request->all(), [
+            'otp' => 'required',
+        ]);
 
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $otp = $validator->safe()->only('otp');
+        $user = User::find($id);
+        $otpValidate = (new Otp)->validate($user['email'], $otp['otp']);
+
+        if ($otpValidate->status === true) {
+            Auth::login($user);
+            return redirect()->intended('home');
+        }
+
+        return back()->withErrors([
+            'failed' => 'The provided OTP is invalid.',
+        ])->withInput();
+
+    }
+
+    public function resendOtp(Request $request)
+    {
+        
     }
 
     public function login(Request $request)
@@ -44,14 +70,17 @@ class LoginController extends Controller
         $credentials = $validator->safe()->only(['email', 'password']);
 
         $user = User::where('email', $credentials['email'])->first();
-        if ($user->email_verified_at === null) {
-            return back()->withErrors([
-                'failed' => 'Your account is not verified. Please check your email inbox.',
-            ])->withInput();
-        }
+        if ($user) {
+            if ($user->email_verified_at === null) {
+                return back()->withErrors([
+                    'failed' => 'Your account is not verified. Please check your email inbox.',
+                ])->withInput();
+            }
 
-        if ($user['email'] === $credentials['email'] && Hash::check($credentials['password'], $user['password'])) {
-            return redirect()->route('otp');
+            if ($user['email'] === $credentials['email'] && Hash::check($credentials['password'], $user['password'])) {
+                (new Otp)->generate($credentials['email'], 'numeric', 6, 2);
+                return redirect()->route('otp', [$user]);
+            }
         }
 
         return back()->withErrors([

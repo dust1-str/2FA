@@ -25,8 +25,9 @@ Route::post('login', [LoginController::class, 'login'])->name('login');
 Route::get('register', [LoginController::class, 'showRegisterForm']);
 Route::post('register', [LoginController::class, 'register'])->name('register');
 
-Route::get('otp', [LoginController::class, 'showOtpForm'])->name('otp');
-Route::post('otp', [LoginController::class, 'verifyOtp'])->name('verifyOtp');
+Route::get('otp/{id}', [LoginController::class, 'showOtpForm'])->whereNumber('id')->name('otp');
+Route::post('otp/{id}', [LoginController::class, 'verifyOtp'])->whereNumber('id')->name('verifyOtp');
+Route::post('resend-otp', [LoginController::class, 'resendOtp'])->name('resendOtp');
 
 Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
