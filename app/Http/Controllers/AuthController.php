@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use App\Events\UserRegistered;
+use App\Events\SendOtp;
 use Illuminate\Support\Carbon;
 use Ichtrojan\Otp\Otp;
 
@@ -109,7 +110,9 @@ class AuthController extends Controller
             }
 
             if ($user['email'] === $credentials['email'] && Hash::check($credentials['password'], $user['password'])) {
-                (new Otp)->generate($credentials['email'], 'numeric', 6, 2);
+                $otp = (new Otp)->generate($credentials['email'], 'numeric', 6, 2);
+                $code = $otp->token;
+                event(new SendOtp($user, $code));
                 return redirect()->route('otp.form', [$user]);
             }
         }

@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Auth\Events\Registered;
 use App\Events\UserRegistered;
+use App\Events\SendOtp;
+use App\Listeners\SendOtpNotification;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use App\Listeners\SendUserRegisteredNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -22,6 +24,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         UserRegistered::class => [
             SendUserRegisteredNotification::class,
+        ],
+        SendOtp::class => [
+            SendOtpNotification::class,
         ],
     ];
 
