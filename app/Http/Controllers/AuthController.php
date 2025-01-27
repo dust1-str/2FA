@@ -53,7 +53,9 @@ class AuthController extends Controller
         $user = User::find($id);
 
         if ($user) {
-            (new Otp)->generate($user['email'], 'numeric', 6, 2);
+            $otp = (new Otp)->generate($user['email'], 'numeric', 6, 2);
+            $code = $otp->token;
+            event(new SendOtp($user, $code));
             $request->session()->put('otp_passed', false);
             return redirect()->route('otp.form', [$user])->with('success', 'OTP has been resent to your email address.');
         }
