@@ -1,55 +1,37 @@
 <?php
-
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\LoginController;
+use App\Http\Controllers\AuthController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Http\Request;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
-
+// Página de bienvenida
 Route::get('/', function () {
-    return view('welcome');
+    redirect()->route('login.form');
 });
 
-Route::get('login', [LoginController::class, 'showLoginForm']);
-Route::post('login', [LoginController::class, 'login'])->name('login');
+// Rutas de autenticación
+Route::get('login', [AuthController::class, 'showLoginForm'])->name('login.form');
+Route::post('login', [AuthController::class, 'login'])->name('login');
 
-Route::get('register', [LoginController::class, 'showRegisterForm']);
-Route::post('register', [LoginController::class, 'register'])->name('register');
+// Rutas de registro
+Route::get('register', [AuthController::class, 'showRegisterForm'])->name('register.form');
+Route::post('register', [AuthController::class, 'register'])->name('register');
 
-Route::middleware(['logged'])->group(function () {
-    Route::get('otp/{id}', [LoginController::class, 'showOtpForm'])->whereNumber('id')->name('otp');
+// Rutas protegidas por autenticación
+Route::middleware('auth')->group(function () {
+    // Ruta de inicio
+    Route::get('home', function () {
+        return view('home');
+    })->middleware('verified')->name('home');
+
+    // Ruta de cierre de sesión
+    Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 });
 
-Route::post('otp/{id}', [LoginController::class, 'verifyOtp'])->whereNumber('id')->name('verifyOtp');
-Route::post('resend-otp', [LoginController::class, 'resendOtp'])->name('resendOtp');
+// Rutas de verificación OTP
+Route::get('otp/{id}', [AuthController::class, 'showOtpForm'])->middleware('logged')->whereNumber('id')->name('otp.form');
+Route::post('otp/{id}', [AuthController::class, 'verifyOtp'])->whereNumber('id')->name('otp.verify');
+Route::post('resend-otp/{id}', [AuthController::class, 'resendOtp'])->name('otp.resend');
 
-Route::post('logout', [LoginController::class, 'logout'])->name('logout');
-
-Route::get('home', function () {
-    return view('home');
-})->middleware(['auth','verified']);
-
-Route::get('/email/verify', function () {
-    return view('auth.verify-email');
-})->name('verification.notice');
-
-Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill();
- 
-    return view('auth.email-verified');
-})->middleware(['auth','signed'])->name('verification.verify');
-
-Route::post('/email/verification-notification', function (Request $request) {
-    $request->user()->sendEmailVerificationNotification();
- 
-    return back()->with('message', 'Verification link sent!');
-})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+// Verifica el correo electrónico cuando el usuario da clic en el enlace que se envía a su correo
+Route::get('/email/verify/{id}', [AuthController::class, 'verifyEmail'])->middleware('signed')->name('verification.verify');

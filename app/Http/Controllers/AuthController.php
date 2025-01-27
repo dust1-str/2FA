@@ -6,11 +6,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Auth\Events\Registered;
-use Ichtrojan\Otp\Otp;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
+use App\Events\UserRegistered;
+use Illuminate\Support\Carbon;
+use Ichtrojan\Otp\Otp;
 
-class LoginController extends Controller
+class AuthController extends Controller
 {
     public function showLoginForm()
     {
@@ -25,6 +27,37 @@ class LoginController extends Controller
     public function showOtpForm($id)
     {
         return view('auth.otp', compact('id'));
+    }
+
+    public function verifyEmail(Request $request, $id)
+    {
+        if (! $request->hasValidSignature()) {
+            abort(401);
+        }
+
+        $user = User::findOrFail($id);
+
+        if ($user->email_verified_at) {
+            return redirect()->route('login.form')->with('message', 'Email already verified.');
+        }
+
+        $user->email_verified_at = Carbon::now();
+        $user->save();
+
+        return view('auth.email-verified');
+    }
+
+    public function resendOtp(Request $request, $id)
+    {
+        $user = User::find($id);
+
+        if ($user) {
+            (new Otp)->generate($user['email'], 'numeric', 6, 2);
+            $request->session()->put('otp_passed', false);
+            return redirect()->route('otp.form', [$user])->with('success', 'OTP has been resent to your email address.');
+        }
+
+        return back()->withErrors(['failed' => 'Failed to resend OTP. Please try again.']);
     }
 
     public function verifyOtp(Request $request, $id){
@@ -54,11 +87,6 @@ class LoginController extends Controller
 
     }
 
-    public function resendOtp(Request $request)
-    {
-        
-    }
-
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -82,7 +110,7 @@ class LoginController extends Controller
 
             if ($user['email'] === $credentials['email'] && Hash::check($credentials['password'], $user['password'])) {
                 (new Otp)->generate($credentials['email'], 'numeric', 6, 2);
-                return redirect()->route('otp', [$user]);
+                return redirect()->route('otp.form', [$user]);
             }
         }
 
@@ -91,11 +119,21 @@ class LoginController extends Controller
         ])->withInput();
     }
 
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login.form');
+    }
+
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users',
+            'name' => 'required|string|max:50|regex:/^[\pL\s]+$/u',
+            'email_local' => 'required|string|max:255',
+            'email_domain' => 'required|in:gmail.com,hotmail.com,outlook.com',
             'password' => 'required|min:8|max:12',
             'confirm_password' => 'required|same:password',
         ]);
@@ -104,7 +142,10 @@ class LoginController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
+        $email = $request->input('email_local') . '@' . $request->input('email_domain');
+
         $data = $validator->safe()->except('confirm_password');
+        $data['email'] = $email;
 
         $user = User::create([
             'name' => $data['name'],
@@ -113,21 +154,9 @@ class LoginController extends Controller
         ]);
 
         if ($user) {
-            Auth::login($user);
-            event(new Registered($user));
+            event(new UserRegistered($user));
         }
 
         return redirect()->route('register')->with('success', 'We have sent you an email to verify your account. Please check your inbox.');
-    }
-
-    public function logout(Request $request)
-    {
-        Auth::logout();
-
-        $request->session()->invalidate();
-
-        $request->session()->regenerateToken();
-
-        return redirect('/login');
     }
 }

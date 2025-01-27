@@ -5,13 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <style>
+        .valid {
+            color: green;
+        }
+        .invalid {
+            color: red;
+        }
+    </style>
 </head>
 <body class="flex items-center justify-center h-screen bg-gray-100">
     <div class="w-full max-w-xs">
         @if (session('success'))
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-                <span class="block sm:inline">{{ session('success') }}</span>
-            </div>
+                <div id="success-message" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                    <span class="block sm:inline">{{ session('success') }}</span>
+                </div>
         @endif
         <form method="POST" action="{{ route('register') }}" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
             @csrf
@@ -28,25 +36,39 @@
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="email">
                     Email
                 </label>
-                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('email') is-invalid @enderror" id="email" type="email" name="email" value="{{ old('email') }}">
+                <div class="flex">
+                    <input class="shadow appearance-none border rounded-l w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('email') is-invalid @enderror" id="email_local" name="email_local" value="{{ old('email_local') }}">
+                    <select class="shadow appearance-none border rounded-r py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="email_domain" name="email_domain" required>
+                        <option value="gmail.com" {{ old('email_domain') == 'gmail.com' ? 'selected' : '' }}>@gmail.com</option>
+                        <option value="hotmail.com" {{ old('email_domain') == 'hotmail.com' ? 'selected' : '' }}>@hotmail.com</option>
+                        <option value="outlook.com" {{ old('email_domain') == 'outlook.com' ? 'selected' : '' }}>@outlook.com</option>
+                    </select>
+                </div>
                 @error('email')
                     <p class="text-red-500 text-xs italic">{{ $message }}</p>
                 @enderror
             </div>
-            <div class="mb-6">
+            <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
                     Password
                 </label>
-                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline @error('password') is-invalid @enderror" id="password" type="password" name="password">
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('password') is-invalid @enderror" id="password" type="password" name="password">
                 @error('password')
                     <p class="text-red-500 text-xs italic">{{ $message }}</p>
                 @enderror
+                <ul class="text-xs mt-2">
+                    <li id="length" class="invalid">At least 8 characters</li>
+                    <li id="uppercase" class="invalid">At least one uppercase letter</li>
+                    <li id="lowercase" class="invalid">At least one lowercase letter</li>
+                    <li id="number" class="invalid">At least one number</li>
+                    <li id="special" class="invalid">At least one special character (@$!%*?&)</li>
+                </ul>
             </div>
-            <div class="mb-6">
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="password_confirmation">
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="confirm_password">
                     Confirm Password
                 </label>
-                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" id="confirm_password" type="password" name="confirm_password">
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('confirm_password') is-invalid @enderror" id="confirm_password" type="password" name="confirm_password">
                 @error('confirm_password')
                     <p class="text-red-500 text-xs italic">{{ $message }}</p>
                 @enderror
@@ -63,8 +85,73 @@
             @endif
         </form>
         <p class="text-center text-gray-500 text-xs">
-            Already have an account? <a href="{{ route('login') }}" class="text-blue-500 hover:text-blue-700">Sign in here</a>
+            Already have an account? <a href="{{ route('login.form') }}" class="text-blue-500 hover:text-blue-700">Sign in here</a>
         </p>
     </div>
+    <script>
+        const passwordInput = document.getElementById('password');
+        const lengthRequirement = document.getElementById('length');
+        const uppercaseRequirement = document.getElementById('uppercase');
+        const lowercaseRequirement = document.getElementById('lowercase');
+        const numberRequirement = document.getElementById('number');
+        const specialRequirement = document.getElementById('special');
+        const successMessage = document.getElementById('success-message');
+
+        passwordInput.addEventListener('input', function() {
+            const value = passwordInput.value;
+
+            // Check length
+            if (value.length >= 8) {
+                lengthRequirement.classList.remove('invalid');
+                lengthRequirement.classList.add('valid');
+            } else {
+                lengthRequirement.classList.remove('valid');
+                lengthRequirement.classList.add('invalid');
+            }
+
+            // Check uppercase
+            if (/[A-Z]/.test(value)) {
+                uppercaseRequirement.classList.remove('invalid');
+                uppercaseRequirement.classList.add('valid');
+            } else {
+                uppercaseRequirement.classList.remove('valid');
+                uppercaseRequirement.classList.add('invalid');
+            }
+
+            // Check lowercase
+            if (/[a-z]/.test(value)) {
+                lowercaseRequirement.classList.remove('invalid');
+                lowercaseRequirement.classList.add('valid');
+            } else {
+                lowercaseRequirement.classList.remove('valid');
+                lowercaseRequirement.classList.add('invalid');
+            }
+
+            // Check number
+            if (/[0-9]/.test(value)) {
+                numberRequirement.classList.remove('invalid');
+                numberRequirement.classList.add('valid');
+            } else {
+                numberRequirement.classList.remove('valid');
+                numberRequirement.classList.add('invalid');
+            }
+
+            // Check special character
+            if (/[@$!%*?&]/.test(value)) {
+                specialRequirement.classList.remove('invalid');
+                specialRequirement.classList.add('valid');
+            } else {
+                specialRequirement.classList.remove('valid');
+                specialRequirement.classList.add('invalid');
+            }
+        });
+
+        // Auto-dismiss success message after 10 seconds
+        setTimeout(function() {
+            if (successMessage) {
+                successMessage.style.display = 'none';
+            }
+        }, 5000);
+    </script>
 </body>
 </html>
