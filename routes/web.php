@@ -4,11 +4,6 @@ use App\Http\Controllers\AuthController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 
-// Página de bienvenida
-Route::get('/', function () {
-    redirect()->route('login.form');
-});
-
 // Rutas de autenticación
 Route::get('login', [AuthController::class, 'showLoginForm'])->name('login.form');
 Route::post('login', [AuthController::class, 'login'])->name('login');
@@ -31,7 +26,7 @@ Route::middleware('auth')->group(function () {
 // Rutas de verificación OTP
 Route::get('otp/{id}', [AuthController::class, 'showOtpForm'])->middleware('logged')->whereNumber('id')->name('otp.form');
 Route::post('otp/{id}', [AuthController::class, 'verifyOtp'])->whereNumber('id')->name('otp.verify');
-Route::post('resend-otp/{id}', [AuthController::class, 'resendOtp'])->name('otp.resend');
+Route::post('resend-otp/{id}', [AuthController::class, 'resendOtp'])->whereNumber('id')->name('otp.resend');
 
 // Verifica el correo electrónico cuando el usuario da clic en el enlace que se envía a su correo
 Route::get('/email/verify/{id}', [AuthController::class, 'verifyEmail'])->middleware('signed')->name('verification.verify');
