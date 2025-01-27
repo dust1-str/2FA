@@ -11,9 +11,6 @@
         @if (session('success'))
                 <div id="success-message" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
                     <span class="block">{{ session('success') }}</span>
-                    <button id="dismiss-button" class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-1 rounded focus:outline-none focus:shadow-outline">
-                        Entendido
-                    </button>
                 </div>
         @endif
         <form method="POST" action="{{ route('otp.verify', ['id' => $id]) }}" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
@@ -39,7 +36,7 @@
                 </div>
             @endif
         </form>
-        <button onclick="event.preventDefault(); document.getElementById('resend-otp-form').submit();" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4">
+        <button id="resend-button" onclick="event.preventDefault(); document.getElementById('resend-otp-form').submit();" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4">
             Resend code
         </button>
         <form id="resend-otp-form" method="POST" action="{{ route('otp.resend', ['id' => $id]) }}" style="display: none;">
@@ -50,18 +47,33 @@
         // Dismiss success message
         const dismissButton = document.getElementById('dismiss-button');
         const successMessage = document.getElementById('success-message');
+        const resendButton = document.getElementById('resend-button');
 
-        if (dismissButton) {
-            dismissButton.addEventListener('click', function() {
-                successMessage.style.display = 'none';
-            });
+        resendButton.addEventListener('click', function() {
+            resendButton.disabled = true;
+            resendButton.style.cursor = 'not-allowed';
+        });
 
-            // Auto-dismiss success message after 10 seconds
-            setTimeout(function() {
-                if (successMessage) {
+        if (successMessage) {
+            resendButton.disabled = true;
+            resendButton.style.cursor = 'not-allowed';
+            
+            let timeLeft = 60; // Tiempo en segundos
+            successMessage.style.display = 'block';
+            const originalMessage = successMessage.querySelector('span').textContent;
+            successMessage.querySelector('span').textContent = `${originalMessage} You can retry in ${timeLeft} seconds.`;
+        
+            const timer = setInterval(() => {
+                timeLeft -= 1;
+                successMessage.querySelector('span').textContent = `${originalMessage} You can retry in ${timeLeft} seconds.`;
+        
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
                     successMessage.style.display = 'none';
+                    resendButton.disabled = false;
+                    resendButton.style.cursor = 'pointer';
                 }
-            }, 10000);
+            }, 1000);
         }
     </script>
 </body>
