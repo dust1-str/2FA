@@ -1,6 +1,7 @@
 <?php
 // routes/auth.php
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\AuthController;
 
 // Rutas de autenticación
@@ -15,4 +16,4 @@ Route::post('register', [AuthController::class, 'register'])->name('register');
 Route::post('logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
 // Verifica el correo electrónico cuando el usuario da clic en el enlace que se envía a su correo
-Route::get('/email/verify/{id}', [AuthController::class, 'verifyEmail'])->middleware('signed')->name('verification.verify');
+Route::get('/email/verify/{id}', [EmailVerificationController::class, 'verifyEmail'])->middleware('signed')->name('verification.verify');
