@@ -37,12 +37,7 @@
                     Email
                 </label>
                 <div class="flex">
-                    <input class="shadow appearance-none border rounded-l w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('email') is-invalid @enderror" id="email_local" name="email_local" value="{{ old('email_local') }}">
-                    <select class="shadow appearance-none border rounded-r py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="email_domain" name="email_domain" required>
-                        <option value="gmail.com" {{ old('email_domain') == 'gmail.com' ? 'selected' : '' }}>@gmail.com</option>
-                        <option value="hotmail.com" {{ old('email_domain') == 'hotmail.com' ? 'selected' : '' }}>@hotmail.com</option>
-                        <option value="outlook.com" {{ old('email_domain') == 'outlook.com' ? 'selected' : '' }}>@outlook.com</option>
-                    </select>
+                    <input class="shadow appearance-none border rounded-l w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email') }}">
                 </div>
                 @error('email')
                     <p class="text-red-500 text-xs italic">{{ $message }}</p>
@@ -52,7 +47,7 @@
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
                     Password
                 </label>
-                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('password') is-invalid @enderror" id="password" type="password" name="password">
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('password') is-invalid @enderror" id="password" type="password" name="password" maxlength="12">
                 @error('password')
                     <p class="text-red-500 text-xs italic">{{ $message }}</p>
                 @enderror
@@ -68,7 +63,7 @@
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="confirm_password">
                     Confirm Password
                 </label>
-                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('confirm_password') is-invalid @enderror" id="confirm_password" type="password" name="confirm_password">
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('confirm_password') is-invalid @enderror" id="confirm_password" type="password" name="confirm_password" maxlength="12">
                 @error('confirm_password')
                     <p class="text-red-500 text-xs italic">{{ $message }}</p>
                 @enderror
@@ -79,6 +74,11 @@
                 </button>
             </div>
             @if ($errors->has('failed'))
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4" role="alert">
+                    <span class="block sm:inline">{{ $errors->first('failed') }}</span>
+                </div>
+            @endif
+            @if ($errors->has('email_Exists'))
                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4" role="alert">
                     <span class="block sm:inline">{{ $errors->first('failed') }}</span>
                 </div>

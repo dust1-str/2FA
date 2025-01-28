@@ -34,12 +34,14 @@ class AuthController extends Controller
         $user = User::where('email', $credentials['email'])->first();
         if ($user) {
             if ($user->email_verified_at === null) {
+                // Limpiar errores anteriores y agregar nuevo error
+                $request->session()->forget('errors');
                 return back()->withErrors([
                     'failed' => 'Your account is not verified. Please check your email inbox.',
                 ])->withInput();
             }
-
-            if ($user['email'] === $credentials['email'] && Hash::check($credentials['password'], $user['password'])) {
+    
+            if (Hash::check($credentials['password'], $user['password'])) {
                 $otp = (new Otp)->generate($credentials['email'], 'numeric', 6, 2);
                 $code = $otp->token;
                 event(new SendOtp($user, $code));
@@ -47,6 +49,8 @@ class AuthController extends Controller
             }
         }
 
+        // Limpiar errores anteriores y agregar nuevo error
+        $request->session()->forget('errors');
         return back()->withErrors([
             'failed' => 'The provided credentials do not match our records.',
         ])->withInput();
@@ -61,8 +65,7 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:50|regex:/^[\pL\s]+$/u',
-            'email_local' => 'required|string|max:255',
-            'email_domain' => 'required|in:gmail.com,hotmail.com,outlook.com',
+            'email' => 'required|unique:users|max:255|regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
             'password' => 'required|min:8|max:12',
             'confirm_password' => 'required|same:password',
         ]);
@@ -71,10 +74,7 @@ class AuthController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        $email = $request->input('email_local') . '@' . $request->input('email_domain');
-
         $data = $validator->safe()->except('confirm_password');
-        $data['email'] = $email;
 
         $user = User::create([
             'name' => $data['name'],

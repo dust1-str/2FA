@@ -13,12 +13,13 @@ class OtpController extends Controller
 {
     public function showOtpForm($id)
     {
+        
         return view('auth.otp', compact('id'));
     }
 
     public function verifyOtp(Request $request, $id){
         $validator = Validator::make($request->all(), [
-            'otp' => 'required',
+            'otp' => 'required|max:6',
         ]);
 
         if ($validator->fails()) {
