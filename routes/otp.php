@@ -1,18 +1,39 @@
 <?php
-// routes/otp.php
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OtpController;
 
-// Rutas de verificación OTP
-Route::get('otp/{id}', [OtpController::class, 'showOtpForm'])->middleware('logged')->whereNumber('id')->name('otp.form');
-Route::post('otp/{id}', [OtpController::class, 'verifyOtp'])->whereNumber('id')->name('otp.verify');
+/**
+ * OTP Verification Routes
+ * These routes handle the OTP (One-Time Password) verification process.
+ * 'logged' middleware is used to check if the user is coming from the login form or is retrying to verify their OTP.
+ */
+
+//Displays the OTP form for the user to enter their OTP.
+Route::get('otp/{id}', [OtpController::class, 'showOtpForm'])
+    ->middleware('logged')
+    ->whereNumber('id')
+    ->name('otp.form');
+
+//Handles the verification of the OTP entered by the user.
+Route::post('otp/{id}', [OtpController::class, 'verifyOtp'])
+    ->whereNumber('id')
+    ->name('otp.verify');
 
 /**
- * La siguiente ruta GET es para evitar que la aplicación falle si se accede a '/resend-otp/{id}' desde el navegador.
- * La ruta POST '/resend-otp/{id}' debe ser utilizada únicamente desde el formulario de verificación.
- * Acceder a esta ruta mediante GET redirige al usuario a la página de inicio.
+ * Resend OTP Routes
+ * These routes handle the resending of the OTP.
+ */
+
+/**
+ * Redirect to home if accessing '/resend-otp/{id}' via GET.
+ * The POST '/resend-otp/{id}' route should be used for resending the OTP.
+ * Protected by the 'auth' middleware.
  */
 Route::get('resend-otp/{id}', function() {
     return redirect()->route('home');
 })->middleware('auth');
-Route::post('resend-otp/{id}', [OtpController::class, 'resendOtp'])->whereNumber('id')->name('otp.resend');
+
+//Handles the resending of the OTP to the user.
+Route::post('resend-otp/{id}', [OtpController::class, 'resendOtp'])
+    ->whereNumber('id')
+    ->name('otp.resend');

@@ -1,20 +1,26 @@
 <?php
 use Illuminate\Support\Facades\Route;
 
-// Importa las rutas de autenticación
+/**
+ * Import authentication routes.
+ */
 require __DIR__.'/auth.php';
 
-// Importa las rutas de verificación OTP
+/**
+ * Import OTP verification routes.
+ */
 require __DIR__.'/otp.php';
 
-// Rutas protegidas por autenticación y verificación de correo electrónico
-Route::middleware(['auth','verified'])->group(function () {
-    // Ruta de inicio que se mostrará cuando haya completado la autenticación
+/**
+ * Routes protected by authentication and email verification middleware.
+ */
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('home', function () {
         return view('home');
     })->name('home');
 });
 
+//Fallback route for handling 404 errors
 Route::fallback(function () {
     return view('errors.404');
 });
