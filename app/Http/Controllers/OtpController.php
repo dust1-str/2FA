@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use Ichtrojan\Otp\Otp;
+use App\Events\SendOtp;
 
 /**
  * Class OtpController
@@ -41,6 +42,7 @@ class OtpController extends Controller
         ]);
 
         if ($validator->fails()) {
+            $request->session()->put('passed', false);
             return back()->withErrors($validator)->withInput();
         }
 

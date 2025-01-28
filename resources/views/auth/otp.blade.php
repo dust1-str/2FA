@@ -13,20 +13,20 @@
                     <span class="block">{{ session('success') }}</span>
                 </div>
         @endif
-        <form method="POST" action="{{ route('otp.verify', ['id' => $id]) }}" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <form id="verifyForm" method="POST" action="{{ route('otp.verify', ['id' => $id]) }}" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
             @csrf
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="otp">
                     We have sent an OTP to your email address.
                     Please enter the code below.
                 </label>
-                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('otp') is-invalid @enderror" id="otp" type="number" name="otp" maxlength="6" autofocus>
+                <input id="otp" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('otp') is-invalid @enderror" id="otp" type="text" name="otp" maxlength="6" autofocus>
                 @error('otp')
                     <p class="text-red-500 text-xs italic">{{ $message }}</p>
                 @enderror
             </div>
             <div class="flex items-center justify-between">
-                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                <button id="verifyButton" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
                     Verify OTP
                 </button>
             </div>
@@ -42,10 +42,38 @@
         <form id="resend-otp-form" method="POST" action="{{ route('otp.resend', ['id' => $id]) }}" style="display: none;">
             @csrf
         </form>
+        <a href="{{ route('login') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+            Go back
+        </a>
     </div>
     <script>
         const successMessage = document.getElementById('success-message');
         const resendButton = document.getElementById('resend-button');
+        const verifyButton = document.getElementById('verifyButton');
+        const verifyForm = document.getElementById('verifyForm');
+        const otpInput = document.getElementById('otp');
+
+        document.addEventListener('DOMContentLoaded', function() {
+            verifyButton.disabled = true;
+            verifyButton.style.cursor = 'not-allowed';
+        });
+
+        function checkInputs() {
+            if (otpInput.value.length === 6) {
+                verifyButton.disabled = false;
+                verifyButton.style.cursor = 'pointer';
+            } else {
+                verifyButton.disabled = true;
+                verifyButton.style.cursor = 'not-allowed';
+            }
+        }
+
+        otpInput.addEventListener('input', checkInputs);
+
+        verifyForm.addEventListener('submit', function() {
+            verifyButton.disabled = true;
+            verifyButton.style.cursor = 'not-allowed';
+        });
 
         resendButton.addEventListener('click', function() {
             resendButton.disabled = true;

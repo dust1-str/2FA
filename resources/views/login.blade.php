@@ -72,6 +72,9 @@
         if (email.value && password.value) {
             loginButton.disabled = false;
             loginButton.style.cursor = 'pointer';
+        } else {
+            loginButton.disabled = true;
+            loginButton.style.cursor = 'not-allowed';
         }
     }
 
