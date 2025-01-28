@@ -54,7 +54,7 @@ class AuthController extends Controller
                 // Clear previous errors and add new error
                 $request->session()->forget('errors');
                 return back()->withErrors([
-                    'failed' => 'Your account is not verified. Please check your email inbox.',
+                    'verified' => 'Your account is not verified. Please check your email inbox.',
                 ])->withInput();
             }
 

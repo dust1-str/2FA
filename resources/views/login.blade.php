@@ -8,7 +8,12 @@
 </head>
 <body class="flex items-center justify-center h-screen bg-gray-100">
     <div class="w-full max-w-xs">
-        <form method="POST" action="{{ route('login') }}" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        @if (session('message'))
+            <div id="successMessage" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <span class="block sm:inline">{{ session('message') }}</span>
+            </div>
+        @endif
+        <form id="loginForm" method="POST" action="{{ route('login') }}" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
             @csrf
             <h1 class="text-2xl font-bold text-center mb-6">Sign in</h1>
             <div class="mb-4">
@@ -30,13 +35,19 @@
                 @enderror
             </div>
             <div class="flex items-center justify-between">
-                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                <button id="loginButton" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
                     Continue
                 </button>
             </div>
-            @if ($errors->has('failed') || $errors->has('login'))
+            @if ($errors->has('failed'))
                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4" role="alert">
                     <span class="block sm:inline">{{ $errors->first('failed') ?: $errors->first('login') }}</span>
+                </div>
+            @endif
+            @if ($errors->has('verified'))
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4" role="alert">
+                    <span class="block sm:inline">{{ $errors->first('verified') }}</span>
+                    <a href="{{ route('verification.resend.form') }}" class="text-blue-500 hover:text-blue-700">Resend verification email</a>
                 </div>
             @endif
         </form>
@@ -45,4 +56,39 @@
         </p>
     </div>
 </body>
+<script>
+    const resendButton = document.getElementById('resendButton');
+    const loginForm = document.getElementById('loginForm');
+    const loginButton = document.getElementById('loginButton');
+    const email = document.getElementById('email');
+    const password = document.getElementById('password');
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loginButton.disabled = true;
+        loginButton.style.cursor = 'not-allowed';
+    });
+
+    function checkInputs() {
+        if (email.value && password.value) {
+            loginButton.disabled = false;
+            loginButton.style.cursor = 'pointer';
+        }
+    }
+
+    password.addEventListener('input', checkInputs);
+    email.addEventListener('input', checkInputs);
+
+    loginForm.addEventListener('submit', function() {
+        loginButton.disabled = true;
+        loginButton.style.cursor = 'not-allowed';
+    });
+
+    const successMessage = document.getElementById('successMessage');
+    // Auto-dismiss success message after 10 seconds
+    setTimeout(function() {
+            if (successMessage) {
+                successMessage.style.display = 'none';
+            }
+        }, 5000);
+</script>
 </html>

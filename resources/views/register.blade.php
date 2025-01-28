@@ -174,7 +174,7 @@
             }
         });
 
-        // Auto-dismiss success message after 10 seconds
+        // Auto-dismiss success message after 5 seconds
         setTimeout(function() {
             if (successMessage) {
                 successMessage.style.display = 'none';

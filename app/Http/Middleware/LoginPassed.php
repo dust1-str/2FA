@@ -30,14 +30,14 @@ class LoginPassed
             return $next($request);
         }
 
-        // Check if the 'otp_passed' session variable is false
-        if ($request->session()->get('otp_passed') === false) {
-            // Clear the 'otp_passed' session variable
-            $request->session()->forget('otp_passed');
+        // Check if the 'passed' session variable is false
+        if ($request->session()->get('passed') === false) {
+            // Clear the 'passed' session variable
+            $request->session()->forget('passed');
             return $next($request);
         }
 
-        // Redirect to the login form if the request does not come from the 'login' route or the 'otp_passed' session variable is not false
+        // Redirect to the login form if the request does not come from the 'login' route or the 'passed' session variable is not false
         return redirect()->route('login');
     }
 }

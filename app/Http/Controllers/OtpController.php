@@ -37,7 +37,7 @@ class OtpController extends Controller
     public function verifyOtp(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'otp' => 'required|max:6',
+            'otp' => 'required|max:6|number',
         ]);
 
         if ($validator->fails()) {
@@ -54,11 +54,11 @@ class OtpController extends Controller
         }
 
         /**
-         * Set the 'otp_passed' session variable to false to allow the user to retry entering the OTP.
+         * Set the 'passed' session variable to false to allow the user to retry entering the OTP.
          * The 'LoginPassed' middleware will redirect the user to the login form if this variable exists and is false.
          * The middleware will clear the session variable
          */
-        $request->session()->put('otp_passed', false);
+        $request->session()->put('passed', false);
 
         return back()->withErrors([
             'failed' => $otpValidate->message,
@@ -73,7 +73,7 @@ class OtpController extends Controller
             $otp = (new Otp)->generate($user['email'], 'numeric', 6, 2);
             $code = $otp->token;
             event(new SendOtp($user, $code));
-            $request->session()->put('otp_passed', false);
+            $request->session()->put('passed', false);
             return redirect()->route('otp.form', [$user])->with('success', 'OTP has been resent to your email address.');
         }
 

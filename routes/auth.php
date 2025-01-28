@@ -23,7 +23,7 @@ Route::middleware('guest')->group(function () {
 
 /**
  * Routes for authenticated users.
- * These routes handle user logout and email verification.
+ * These routes handle user logout.
  */
 Route::middleware('auth')->group(function () {
     /**
@@ -34,7 +34,9 @@ Route::middleware('auth')->group(function () {
         return redirect()->route('home');
     });
 
-    //Handle a logout request.
+    /**
+     * Handle a logout request
+     */
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 });
 
@@ -45,4 +47,13 @@ Route::middleware('auth')->group(function () {
  *
      * @param int $id The ID of the user to verify.
  */
-Route::get('/email/verify/{id}', [EmailVerificationController::class, 'verifyEmail'])->middleware('signed')->name('verification.verify');
+Route::get('/email/verify/{id}', [EmailVerificationController::class, 'verifyEmail'])->middleware('signed')->whereNumber('id')->name('verification.verify');
+
+/**
+ * Resend the email verification link.
+ * This route is used to resend the email verification link to the user.
+ * Protected by the 'logged' middleware to check if the user is coming from the login form or is retrying to verify their email.
+ * POST route to handle the form submission.
+ */
+Route::get('/email/resend', [EmailVerificationController::class, 'showResendVerificationForm'])->middleware('logged')->name('verification.resend.form');
+Route::post('/email/resend', [EmailVerificationController::class, 'resendVerification'])->name('verification.resend');
