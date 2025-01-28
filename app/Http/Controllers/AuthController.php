@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -11,13 +10,31 @@ use App\Events\UserRegistered;
 use App\Events\SendOtp;
 use Ichtrojan\Otp\Otp;
 
+/**
+ * Class AuthController
+ *
+ * This controller handles the authentication and registration of users.
+ *
+ * @package App\Http\Controllers
+ */
 class AuthController extends Controller
 {
+    /**
+     * Show the login form.
+     *
+     * @return \Illuminate\View\View
+     */
     public function showLoginForm()
     {
         return view('login');
     }
 
+    /**
+     * Handle a login request to the application.
+     *
+     * @param \Illuminate\Http\Request $request The incoming request instance.
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -34,13 +51,13 @@ class AuthController extends Controller
         $user = User::where('email', $credentials['email'])->first();
         if ($user) {
             if ($user->email_verified_at === null) {
-                // Limpiar errores anteriores y agregar nuevo error
+                // Clear previous errors and add new error
                 $request->session()->forget('errors');
                 return back()->withErrors([
                     'failed' => 'Your account is not verified. Please check your email inbox.',
                 ])->withInput();
             }
-    
+
             if (Hash::check($credentials['password'], $user['password'])) {
                 $otp = (new Otp)->generate($credentials['email'], 'numeric', 6, 2);
                 $code = $otp->token;
@@ -49,18 +66,19 @@ class AuthController extends Controller
             }
         }
 
-        // Limpiar errores anteriores y agregar nuevo error
+        // Clear previous errors and add new error
         $request->session()->forget('errors');
         return back()->withErrors([
             'failed' => 'The provided credentials do not match our records.',
         ])->withInput();
     }
 
-    public function showRegisterForm()
-    {
-        return view('register');
-    }
-
+    /**
+     * Handle a registration request for the application.
+     *
+     * @param \Illuminate\Http\Request $request The incoming request instance.
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -86,15 +104,6 @@ class AuthController extends Controller
             event(new UserRegistered($user));
         }
 
-        return redirect()->route('register')->with('success', 'We have sent you an email to verify your account. Please check your inbox.');
-    }
-
-    public function logout(Request $request)
-    {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect()->route('login.form');
+        return redirect()->route('login.form')->with('status', 'Registration successful. Please check your email to verify your account.');
     }
 }
