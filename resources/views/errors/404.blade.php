@@ -1,3 +1,9 @@
+<!--
+    This page is displayed when a user tries to access a page that does not
+    exist. It provides a link to the home page so the user can navigate
+    back to the main site or to the login form if the user is not authenticated.
+    This view can be customized as needed.
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>

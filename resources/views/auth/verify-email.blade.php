@@ -1,3 +1,7 @@
+<!--
+This view is displayed when a user tries to access a page that requires email verification.
+In other words, when the middleware 'verified' fails, this view is displayed.
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>

@@ -44,8 +44,6 @@
         </form>
     </div>
     <script>
-        // Dismiss success message
-        const dismissButton = document.getElementById('dismiss-button');
         const successMessage = document.getElementById('success-message');
         const resendButton = document.getElementById('resend-button');
 
@@ -58,7 +56,7 @@
             resendButton.disabled = true;
             resendButton.style.cursor = 'not-allowed';
             
-            let timeLeft = 60; // Tiempo en segundos
+            let timeLeft = 60;
             successMessage.style.display = 'block';
             const originalMessage = successMessage.querySelector('span').textContent;
             successMessage.querySelector('span').textContent = `${originalMessage} You can retry in ${timeLeft} seconds.`;

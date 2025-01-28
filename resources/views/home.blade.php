@@ -1,3 +1,8 @@
+<!--
+This view represents the home page that users see after 2FA authentication.
+It includes a welcome message and a logout button.
+-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
