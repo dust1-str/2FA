@@ -14,3 +14,7 @@ Route::middleware(['auth','verified'])->group(function () {
         return view('home');
     })->name('home');
 });
+
+Route::fallback(function () {
+    return view('errors.404');
+});
