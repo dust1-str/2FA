@@ -1,25 +1,42 @@
 <?php
-
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
-use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
-use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use App\Models\User; 
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PrivateChannel;
+use App\Models\User;
 
+/**
+ * Class SendOtp
+ *
+ * This event is triggered when an OTP (One-Time Password) needs to be sent to a user.
+ *
+ * @package App\Events
+ */
 class SendOtp
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
+
+    /**
+     * The user instance.
+     *
+     * @var \App\Models\User
+     */
     public $user;
+
+    /**
+     * The OTP code.
+     *
+     * @var string
+     */
     public $otp;
 
     /**
      * Create a new event instance.
      *
+     * @param \App\Models\User $user The user to whom the OTP is being sent.
+     * @param string $otp The OTP code to be sent.
      * @return void
      */
     public function __construct(User $user, $otp)
