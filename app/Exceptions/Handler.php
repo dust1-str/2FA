@@ -3,6 +3,9 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -37,5 +40,24 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             //
         });
+
+        $this->renderable(function (QueryException $e, $request) {
+            if ($this->isDatabaseConnectionError($e)) {
+                Log::error('Database connection error: ' . $e->getMessage());
+                return response()->view('errors.database', [], Response::HTTP_SERVICE_UNAVAILABLE);
+            }
+        });
+    }
+
+    /**
+     * Determine if the exception is a database connection error.
+     *
+     * @param \Illuminate\Database\QueryException $e
+     * @return bool
+     */
+    protected function isDatabaseConnectionError(QueryException $e)
+    {
+        $message = $e->getMessage();
+        return str_contains($message, 'SQLSTATE[08006]');
     }
 }
