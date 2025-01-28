@@ -58,7 +58,7 @@ class SendOtpCode extends Mailable
     public function content()
     {
         return new Content(
-            view: 'emails.otp',
+            view: 'emails.otp-code',
             with: ['otp' => $this->otp],
         );
     }

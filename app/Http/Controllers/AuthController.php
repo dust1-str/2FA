@@ -74,6 +74,16 @@ class AuthController extends Controller
     }
 
     /**
+     * Show the register form.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function showRegisterForm()
+    {
+        return view('register');
+    }
+
+    /**
      * Handle a registration request for the application.
      *
      * @param \Illuminate\Http\Request $request The incoming request instance.
@@ -104,6 +114,16 @@ class AuthController extends Controller
             event(new UserRegistered($user));
         }
 
-        return redirect()->route('login.form')->with('status', 'Registration successful. Please check your email to verify your account.');
+        return back()->with('success', 'We have sent you an email to verify your account. Please check your inbox.');
+    }
+
+    //Handle a logout request.
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login.form');
     }
 }
