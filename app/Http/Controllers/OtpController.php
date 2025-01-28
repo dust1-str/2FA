@@ -37,7 +37,7 @@ class OtpController extends Controller
     public function verifyOtp(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'otp' => 'required|max:6|number',
+            'otp' => 'required|max:6|',
         ]);
 
         if ($validator->fails()) {
