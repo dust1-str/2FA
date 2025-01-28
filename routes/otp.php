@@ -31,7 +31,7 @@ Route::post('otp/{id}', [OtpController::class, 'verifyOtp'])
  */
 Route::get('resend-otp/{id}', function() {
     return redirect()->route('home');
-})->middleware('auth');
+})->middleware('auth')->whereNumber('id');
 
 //Handles the resending of the OTP to the user.
 Route::post('resend-otp/{id}', [OtpController::class, 'resendOtp'])
