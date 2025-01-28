@@ -10,15 +10,35 @@ use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\URL;
 
+/**
+ * Class VerifyEmail
+ *
+ * This is the mail that is sent when a user needs to verify their email address.
+ *
+ * @package App\Mail
+ */
 class VerifyEmail extends Mailable
 {
     use Queueable, SerializesModels;
+
+    /**
+     * The user instance.
+     *
+     * @var \App\Models\User
+     */
     public $user;
+
+    /**
+     * The email verification URL.
+     *
+     * @var string
+     */
     public $verificationUrl;
 
     /**
      * Create a new message instance.
      *
+     * @param \App\Models\User $user The user to whom the verification email is being sent.
      * @return void
      */
     public function __construct($user)

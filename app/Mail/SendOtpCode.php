@@ -9,13 +9,28 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
+/**
+ * Class SendOtpCode
+ *
+ * This is the mail that is sent when an OTP (One-Time Password) needs to be sent to a user.
+ *
+ * @package App\Mail
+ */
 class SendOtpCode extends Mailable
 {
     use Queueable, SerializesModels;
+
+    /**
+     * The OTP code.
+     *
+     * @var string
+     */
     public $otp;
+
     /**
      * Create a new message instance.
      *
+     * @param string $otp The OTP code to be sent.
      * @return void
      */
     public function __construct($otp)
@@ -31,7 +46,7 @@ class SendOtpCode extends Mailable
     public function envelope()
     {
         return new Envelope(
-            subject: 'Otp Code',
+            subject: 'Your OTP Code',
         );
     }
 
@@ -43,10 +58,8 @@ class SendOtpCode extends Mailable
     public function content()
     {
         return new Content(
-            view: 'emails.otp-code',
-            with: [
-                'otp' => $this->otp
-            ],
+            view: 'emails.otp',
+            with: ['otp' => $this->otp],
         );
     }
 
