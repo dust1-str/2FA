@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
@@ -9,6 +10,8 @@ use App\Models\User;
 use App\Events\UserRegistered;
 use App\Events\SendOtp;
 use Ichtrojan\Otp\Otp;
+use App\Rules\Recaptcha;
+use Http;
 
 /**
  * Class AuthController
@@ -37,9 +40,15 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
+        $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+            'secret' => env('RECAPTCHA_SECRET'),
+            'response' => $request->input('g-recaptcha-response')
+        ])->object();
+        
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|max:255',
             'password' => 'required|max:12',
+            'g-recaptcha-response' => ['required', new Recaptcha]
         ]);
 
         if ($validator->fails()) {
@@ -52,6 +61,14 @@ class AuthController extends Controller
         if ($user) {
             if ($user->email_verified_at === null) {
                 // Clear previous errors and add new error
+                Log::warning('Login attempt failed: email not verified', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'IP' => $request->ip(),
+                    'URL' => $request->url(),
+                    'CONTROLLER' => AuthController::class,
+                    'METHOD' => 'login',
+                ]);
                 $request->session()->forget('errors');
                 return back()->withErrors([
                     'verified' => 'Your account is not verified. Please check your email inbox.',
@@ -62,10 +79,26 @@ class AuthController extends Controller
                 $otp = (new Otp)->generate($credentials['email'], 'numeric', 6, 2);
                 $code = $otp->token;
                 event(new SendOtp($user, $code));
+                Log::info('Login successful. OTP sent', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'IP' => $request->ip(),
+                    'URL' => $request->url(),
+                    'CONTROLLER' => AuthController::class,
+                    'METHOD' => 'login',
+                ]);
                 return redirect()->route('otp.form', [$user]);
             }
         }
 
+        Log::error('Login attempt failed: invalid credentials', [
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'IP' => $request->ip(),
+            'URL' => $request->url(),
+            'CONTROLLER' => AuthController::class,
+            'METHOD' => 'login',
+        ]);
         // Clear previous errors and add new error
         $request->session()->forget('errors');
         return back()->withErrors([
@@ -112,18 +145,41 @@ class AuthController extends Controller
 
         if ($user) {
             event(new UserRegistered($user));
+            Log::info('New user created. Email verification link sent', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'IP' => $request->ip(),
+                'URL' => $request->url(),
+                'CONTROLLER' => AuthController::class,
+                'METHOD' => 'register',
+            ]);
+            return back()->with('success', 'We have sent you an email to verify your account. Please check your inbox.');
+        } else {
+            Log::error('Failed to create new user', [
+                'IP' => $request->ip(),
+                'URL' => $request->url(),
+                'CONTROLLER' => AuthController::class,
+                'METHOD' => 'register',
+            ]);
+            return back()->withErrors([
+                'failed' => 'Failed to create new user. Please try again.',
+            ])->withInput();
         }
-
-        return back()->with('success', 'We have sent you an email to verify your account. Please check your inbox.');
     }
 
     //Handle a logout request.
     public function logout(Request $request)
     {
+        Log::info('User logging out', [
+            'USER' => $request->user()->email,
+            'IP' => $request->ip(),
+            'URL' => $request->url(),
+            'CONTROLLER' => AuthController::class,
+            'METHOD' => 'logout',
+        ]);
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-
         return redirect()->route('login.form');
     }
 }

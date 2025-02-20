@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use App\Events\UserRegistered;
@@ -28,11 +29,27 @@ class EmailVerificationController extends Controller
         $user = User::findOrFail($id);
 
         if ($user->email_verified_at) {
+            Log::warning('Email verification failed: Email already verified', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'IP' => $request->ip(),
+                'URL' => $request->url(),
+                'CONTROLLER' => EmailVerificationController::class,
+                'METHOD' => 'verifyEmail',
+            ]);
             return redirect()->route('login.form')->with('message', 'Email already verified.');
         }
 
         $user->email_verified_at = Carbon::now();
         $user->save();
+        Log::info('Email verification successful', [
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'IP' => $request->ip(),
+            'URL' => $request->url(),
+            'CONTROLLER' => EmailVerificationController::class,
+            'METHOD' => 'verifyEmail',
+        ]);
 
         return view('auth.email-verified');
     }
@@ -58,9 +75,24 @@ class EmailVerificationController extends Controller
         $user = User::where('email', $data['email'])->first();
         if ($user) {
             event(new UserRegistered($user));
+            Log::info('Email verification link sent again', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'IP' => $request->ip(),
+                'URL' => $request->url(),
+                'CONTROLLER' => EmailVerificationController::class,
+                'METHOD' => 'resendVerification',
+            ]);
             return redirect()->route('login')->with('message', 'Verification email sent. Please check your inbox.');
         } else {
             $request->session()->put('passed', false);
+            Log::error('Sending email verification failed: No user found with that email address.', [
+                'email' => $data['email'],
+                'IP' => $request->ip(),
+                'URL' => $request->url(),
+                'CONTROLLER' => EmailVerificationController::class,
+                'METHOD' => 'resendVerification',
+            ]);
             return back()->withErrors([
                 'failed' => 'No user found with that email address.',
             ])->withInput();

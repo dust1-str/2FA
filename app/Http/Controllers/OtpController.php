@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
@@ -51,6 +52,14 @@ class OtpController extends Controller
         $otpValidate = (new Otp)->validate($user['email'], $otp['otp']);
 
         if ($otpValidate->status === true) {
+            Log::info('Authentication successful: OTP valid. Redirecting to home', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'IP' => $request->ip(),
+                'URL' => $request->url(),
+                'CONTROLLER' => OtpController::class,
+                'METHOD' => 'verifyOtp',
+            ]);
             Auth::login($user);
             return redirect()->intended('home');
         }
@@ -61,6 +70,14 @@ class OtpController extends Controller
          * The middleware will clear the session variable
          */
         $request->session()->put('passed', false);
+        Log::error('Authentication failed: OTP is not valid.', [
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'IP' => $request->ip(),
+            'URL' => $request->url(),
+            'CONTROLLER' => OtpController::class,
+            'METHOD' => 'verifyOtp',
+        ]);
 
         return back()->withErrors([
             'failed' => $otpValidate->message,
@@ -76,9 +93,23 @@ class OtpController extends Controller
             $code = $otp->token;
             event(new SendOtp($user, $code));
             $request->session()->put('passed', false);
+            Log::info('Otp code sent successful', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'IP' => $request->ip(),
+                'URL' => $request->url(),
+                'CONTROLLER' => OtpController::class,
+                'METHOD' => 'resendOtp',
+            ]);
             return redirect()->route('otp.form', [$user])->with('success', 'OTP has been resent to your email address.');
         }
 
+        Log::error('Failed to resend OTP', [
+            'IP' => $request->ip(),
+            'URL' => $request->url(),
+            'CONTROLLER' => OtpController::class,
+            'METHOD' => 'resendOtp',
+        ]);
         return back()->withErrors(['failed' => 'Failed to resend OTP. Please try again.']);
     }
 }
