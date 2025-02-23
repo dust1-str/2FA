@@ -58,8 +58,11 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
+            'sslmode' => env('DB_SSLMODE', 'prefer'),
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                PDO::MYSQL_ATTR_SSL_CA => env('DB_CA'),
+                PDO::MYSQL_ATTR_SSL_CERT => env('DB_CERT'),
+                PDO::MYSQL_ATTR_SSL_KEY => env('DB_KEY'),
             ]) : [],
         ],
 
