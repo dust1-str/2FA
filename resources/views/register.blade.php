@@ -1,21 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
-    <style>
-        .valid {
-            color: green;
-        }
-        .invalid {
-            color: red;
-        }
-    </style>
-</head>
-<body class="flex items-center justify-center h-screen bg-gray-100">
-    <div class="w-full max-w-xs">
+@extends('app')
+
+@section('title', 'Register')
+
+@section('content')
         @if (session('success'))
                 <div id="success-message" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
                     <span class="block sm:inline">{{ session('success') }}</span>
@@ -83,7 +70,6 @@
         <p class="text-center text-gray-500 text-xs">
             Already have an account? <a href="{{ route('login.form') }}" class="text-blue-500 hover:text-blue-700">Sign in here</a>
         </p>
-    </div>
     <script>
         const nameInput = document.getElementById('name');
         const emailInput = document.getElementById('email');
@@ -181,5 +167,4 @@
             }
         }, 5000);
     </script>
-</body>
-</html>
+@endsection

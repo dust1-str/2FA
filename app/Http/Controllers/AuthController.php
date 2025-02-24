@@ -39,12 +39,7 @@ class AuthController extends Controller
      * @return \Illuminate\Http\RedirectResponse
      */
     public function login(Request $request)
-    {
-        $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-            'secret' => env('RECAPTCHA_SECRET'),
-            'response' => $request->input('g-recaptcha-response')
-        ])->object();
-        
+    {   
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|max:255',
             'password' => 'required|max:12',
@@ -92,8 +87,7 @@ class AuthController extends Controller
         }
 
         Log::error('Login attempt failed: invalid credentials', [
-            'user_id' => $user->id,
-            'email' => $user->email,
+            'email' => $credentials['email'],
             'IP' => $request->ip(),
             'URL' => $request->url(),
             'CONTROLLER' => AuthController::class,
