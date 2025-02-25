@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Support\Carbon;
 use App\Events\UserRegistered;
 use Illuminate\Support\Facades\Validator;
+use App\Rules\Recaptcha;
 
 /**
  * Class EmailVerificationController
@@ -63,6 +64,7 @@ class EmailVerificationController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required|max:255|regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
+            'g-recaptcha-response' => ['required', new Recaptcha]
         ]);
 
         if ($validator->fails()) {

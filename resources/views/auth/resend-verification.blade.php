@@ -1,13 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resend Verification Email</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
-</head>
-<body class="flex items-center justify-center h-screen bg-gray-100">
-    <div class="w-full max-w-xs">
+@extends('app')
+
+@section('title', 'Resend email')
+
+@section('content')
         @if ($errors->has('failed'))
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4 mb-4" role="alert">
                 <span class="block sm:inline">{{ $errors->first('failed') }}</span>
@@ -35,8 +30,8 @@
                 </a>
             </div>
         </form>
-    </div>
-</body>
+@endsection
+@section('scripts')
 <script>
     const resendButton = document.getElementById('resendButton');
     const resendForm = document.getElementById('resendForm');
@@ -63,4 +58,4 @@
         resendButton.style.cursor = 'not-allowed';
     });
 </script>
-</html>
+@endsection
