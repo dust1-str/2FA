@@ -123,13 +123,14 @@ class AuthController extends Controller
             'email' => 'required|unique:users|max:255|regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
             'password' => 'required|min:8|max:12',
             'confirm_password' => 'required|same:password',
+            'g-recaptcha-response' => ['required', new Recaptcha]
         ]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
 
-        $data = $validator->safe()->except('confirm_password');
+        $data = $validator->safe()->except('confirm_password', 'g-recaptcha-response');
 
         $user = User::create([
             'name' => $data['name'],
