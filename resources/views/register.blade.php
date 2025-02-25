@@ -1,6 +1,16 @@
 @extends('app')
 
 @section('title', 'Register')
+@section('styles')
+<style>
+        .valid {
+            color: green;
+        }
+        .invalid {
+            color: red;
+        }
+    </style>
+@endsection
 
 @section('content')
         @if (session('success'))
@@ -70,6 +80,9 @@
         <p class="text-center text-gray-500 text-xs">
             Already have an account? <a href="{{ route('login.form') }}" class="text-blue-500 hover:text-blue-700">Sign in here</a>
         </p>
+@endsection
+
+@section('scripts')
     <script>
         const nameInput = document.getElementById('name');
         const emailInput = document.getElementById('email');

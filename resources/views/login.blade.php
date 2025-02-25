@@ -69,23 +69,23 @@
         loginButton.style.cursos = 'not allowed';
     });
 
-    // document.addEventListener('DOMContentLoaded', function () {
-    //     loginButton.disabled = true;
-    //     loginButton.style.cursor = 'not-allowed';
-    // });
+    document.addEventListener('DOMContentLoaded', function () {
+        loginButton.disabled = true;
+        loginButton.style.cursor = 'not-allowed';
+    });
 
-    // function checkInputs() {
-    //     if (email.value && password.value) {
-    //         loginButton.disabled = false;
-    //         loginButton.style.cursor = 'pointer';
-    //     } else {
-    //         loginButton.disabled = true;
-    //         loginButton.style.cursor = 'not-allowed';
-    //     }
-    // }
+    function checkInputs() {
+        if (email.value && password.value) {
+            loginButton.disabled = false;
+            loginButton.style.cursor = 'pointer';
+        } else {
+            loginButton.disabled = true;
+            loginButton.style.cursor = 'not-allowed';
+        }
+    }
 
-    // password.addEventListener('input', checkInputs);
-    // email.addEventListener('input', checkInputs);
+    password.addEventListener('input', checkInputs);
+    email.addEventListener('input', checkInputs);
 
     const successMessage = document.getElementById('successMessage');
     // Auto-dismiss success message after 10 seconds
