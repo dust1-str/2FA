@@ -57,6 +57,8 @@
 <p class="text-center text-gray-500 text-xs">
     Don't have an account? <a href="{{ route('register') }}" class="text-blue-500 hover:text-blue-700">Register here</a>
 </p>
+@endsection
+@section('scripts')
 <script>
     const resendButton = document.getElementById('resendButton');
     const loginForm = document.getElementById('loginForm');
