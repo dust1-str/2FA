@@ -1,13 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify OTP</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
-</head>
-<body class="flex items-center justify-center h-screen bg-gray-100">
-    <div class="w-full max-w-xs">
+@extends('app')
+
+@section('title', 'Verify OTP')
+
+@section('content')
         @if (session('success'))
                 <div id="success-message" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
                     <span class="block">{{ session('success') }}</span>
@@ -36,16 +31,17 @@
                 </div>
             @endif
         </form>
-        <button id="resend-button" onclick="event.preventDefault(); document.getElementById('resend-otp-form').submit();" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4">
-            Resend code
-        </button>
-        <form id="resend-otp-form" method="POST" action="{{ route('otp.resend', ['id' => $id]) }}" style="display: none;">
+        <form id="resend-otp-form" method="POST" action="{{ route('otp.resend', ['id' => $id]) }}" class="span">
             @csrf
-        </form>
-        <a href="{{ route('login') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+            <button id="resend-button" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+            Resend code
+            </button>
+            <a href="{{ route('login') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold mt-70 py-2.5 px-4 rounded focus:outline-none focus:shadow-outline">
             Go back
-        </a>
-    </div>
+            </a>
+        </form>
+@endsection
+@section('scripts')
     <script>
         const successMessage = document.getElementById('success-message');
         const resendButton = document.getElementById('resend-button');
@@ -75,9 +71,22 @@
             verifyButton.style.cursor = 'not-allowed';
         });
 
-        resendButton.addEventListener('click', function() {
+        resendButton.addEventListener('click', function(e) {
+            e.preventDefault();
             resendButton.disabled = true;
             resendButton.style.cursor = 'not-allowed';
+            grecaptcha.ready(function () {
+                grecaptcha.execute('6LebQMoqAAAAAH7z3A_DuK05wZEW_JyvKZvs2qtg', { action: 'submit' }).then(function (token) {
+                    let form = document.getElementById('resend-otp-form');
+                    console.log(form);
+                    let input =document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'g-recaptcha-response';
+                    input.value = token;
+                    form.appendChild(input);
+                    form.submit();
+                });
+            });
         });
 
         if (successMessage) {
@@ -102,5 +111,4 @@
             }, 1000);
         }
     </script>
-</body>
-</html>
+@endsection

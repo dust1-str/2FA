@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use Ichtrojan\Otp\Otp;
 use App\Events\SendOtp;
+use App\Rules\Recaptcha;
 
 /**
  * Class OtpController
@@ -40,6 +41,7 @@ class OtpController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'otp' => 'required|max:6|',
+            'g-recaptcha-response' => ['required', new Recaptcha]
         ]);
 
         if ($validator->fails()) {
@@ -86,6 +88,16 @@ class OtpController extends Controller
 
     public function resendOtp(Request $request, $id)
     {
+        $validator = Validator::make($request->all(), [
+            'g-recaptcha-response' => ['required', new Recaptcha]
+        ]);
+
+        if ($validator->fails()) {
+            $errors = $validator->errors()->all();
+            $request->session()->put('passed', false);
+            return back()->withErrors(['failed' => $errors])->withInput();
+        }
+        
         $user = User::find($id);
 
         if ($user) {
