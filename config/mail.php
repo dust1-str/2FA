@@ -44,6 +44,10 @@ return [
             'timeout' => null,
         ],
 
+        'resend' => [
+            'transport' => 'resend',
+        ],
+
         'ses' => [
             'transport' => 'ses',
         ],
